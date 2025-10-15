@@ -16,8 +16,8 @@ class SimplexSolver:
         self.indep_terms = b
         self.coefs_matrix = A
         self.degress_freedom = m - n # quantidade de colunas na matriz N
-        self.base_matrix = None
-        self.n_matrix = None
+        self.c_t = None
+        self.p_t = None
     
         if n > m:
             raise ValueError("Problema Ilimitado")
@@ -29,7 +29,15 @@ class SimplexSolver:
         self.n_matrix = A[:, self.index_n]
 
     def basic_solver(self):
-        # calculo da inversa de B
+        # calculo da inversa de B e x
+        base_inverse = np.linalg.inv(self.base_matrix)
+
+        x_basic = base_inverse @ self.indep_terms
+
+        # calculo do vetor multiplicados
+        self.c_t = self.indep_terms[:, self.index_base]
+        self.p_t = self.c_t @ base_inverse
+
         pass
         
     
