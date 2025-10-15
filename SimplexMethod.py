@@ -22,12 +22,14 @@ class SimplexSolver:
         if n > m:
             raise ValueError("Problema Ilimitado")
 
+        # matriz base e matriz N iniciais
         self.index_base = [i for i in range(len(b))]
-        self.index_n = [i for i in range(m-n)]
+        self.index_n = [i for i in range(len(b), m - n)]
+        self.base_matrix = A[:, self.index_base]
+        self.n_matrix = A[:, self.index_n]
 
     def basic_solver(self):
         # calculo da inversa de B
-        
         pass
         
     
