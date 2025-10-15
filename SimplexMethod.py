@@ -15,8 +15,19 @@ class SimplexSolver:
         self.cost_matrix = c
         self.indep_terms = b
         self.coefs_matrix = A
+        self.degress_freedom = m - n # quantidade de colunas na matriz N
+        self.base_matrix = None
+        self.n_matrix = None
     
         if n > m:
             raise ValueError("Problema Ilimitado")
+
+        self.index_base = [i for i in range(len(b))]
+        self.index_n = [i for i in range(m-n)]
+
+    def basic_solver(self):
+        # calculo da inversa de B
+        
+        pass
         
     
