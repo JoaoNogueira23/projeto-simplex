@@ -47,7 +47,8 @@ class SimplexSolver:
         self.max_iterations = 1000
 
     def _find_identity_base(self):
-        """Tenta encontrar colunas de A que formem a identidade (colunas de slack)."""
+        """Tenta encontrar colunas de A que formem a identidade para otimizar o calculo
+        """
         m, n = self.A.shape
         identity_cols = []
         for j in range(n):
@@ -67,17 +68,15 @@ class SimplexSolver:
 
     def _compute_basic_solution(self):
         """Calcula B_inv, x_B e atualiza x (com zeros para não-básicas)."""
-        B = self.A[:, self.index_base]
+        B = self.A[:, self.index_base] #matriz base
         try:
-            B_inv = np.linalg.inv(B)
+            B_inv = np.linalg.inv(B) # inversa da matriz base
         except np.linalg.LinAlgError:
             raise ValueError("Matriz base singular — base inválida.")
         self.B_inv = B_inv
         x_B = B_inv @ self.b
-        # Checagem de viabilidade básica
-        if np.any(x_B < -1e-9):
-            raise ValueError("Base fornecida não é viável (componentes básicas negativas).")
-        # montar solução completa
+
+        # montar solução basica
         x = np.zeros(self.n)
         for i, idx in enumerate(self.index_base):
             x[idx] = x_B[i]
@@ -89,7 +88,7 @@ class SimplexSolver:
         c_B = np.array([self.c[j] for j in self.index_base])
         # pi^T = c_B^T B^{-1}
         piT = c_B @ self.B_inv
-        # reduced costs para todas variáveis:
+
         reduced = self.c - (piT @ self.A)
         return reduced, piT
 
@@ -122,33 +121,31 @@ class SimplexSolver:
     def solve(self, max_iter=500):
         """Executa o simplex primal até otimidade ou ilimitado. Retorna solução e custo."""
         self.max_iterations = max_iter
-        # primeira base
-        x_B = self._compute_basic_solution()
+        _ = self._compute_basic_solution()
         self.iterations = 0
 
         while self.iterations < self.max_iterations:
             self.iterations += 1
             reduced, piT = self._reduced_costs()
             # escolha variável entrante: custo relativo negativo mais negativo (minimização)
-            # aqui: se todos >= 0, solução ótima encontrada
-            min_value = np.min(reduced)
+            # se todos >= 0, solução ótima encontrada (para)
             entering_candidates = np.where(reduced < -1e-9)[0]
             if entering_candidates.size == 0:
                 # ótimo
                 objective = float(self.c @ self.x)
-                return {"status": "optimal", "x": self.x, "objective": objective, "iterations": self.iterations}
+                return {"status": "ótima", "x": self.x, "objetivo": objective, "iterações": self.iterations}
             # escolha pelo menor custo reduzido (mais negativo); tie-break pelo menor índice (Bland)
             entering_idx = int(entering_candidates[np.argmin(reduced[entering_candidates])])
 
-            # teste razão
+            # teste razão (para escolher quem vai entrar na base para a nova interação)
             leaving_pos, d = self._ratio_test(entering_idx)
             if leaving_pos is None:
                 # direção não positiva -> ilimitado
-                return {"status": "unbounded", "entering": entering_idx, "d": d}
-            # pivot
+                return {"status": "ilimitada", "input": entering_idx, "d": d}
+            # faz a troca de base apos definido quem vai entrar
             self._pivot(entering_idx, leaving_pos)
 
-        return {"status": "max_iterations_exceeded", "iterations": self.iterations}
+        return {"status": "interações máximas excedidadas", "iterações": self.iterations}
 
 # ---------------------------
 # Exemplo de uso:
