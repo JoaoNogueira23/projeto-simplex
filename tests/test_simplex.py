@@ -1,6 +1,7 @@
 import numpy as np
 from SimplexMethod import SimplexSolver
 
+#
 
 def test_example_problem():
     # Problema do README / exemplo no final de SimplexMethod.py
